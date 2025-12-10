@@ -22,25 +22,38 @@ impl Dial {
     fn rotate(&mut self, direction: char, amount: &str) -> Result<u8, Box<dyn std::error::Error>> {
 
         let mut uamount = amount.parse::<u32>()?;
+        let mut zero_count: u8 = 0;
+
+        if uamount > (self.upper_limit + 1) {
+            zero_count += (uamount / (self.upper_limit + 1)) as u8;
+        }
         uamount = uamount % (self.upper_limit + 1);
         
         match direction {
             'L' => {
                 if uamount > self.position {
-                    self.position = self.upper_limit + 1 - uamount + self.position;
+                    if self.position != 0 {
+                        zero_count += 1;
+                    }
+                    self.position = self.position + self.upper_limit + 1 - uamount;
                 } else {
                     self.position -= uamount;
                 }
             }
             'R' => {
-                self.position = (self.position + uamount) % (self.upper_limit + 1);
+                self.position = self.position + uamount;
+                if self.position > self.upper_limit + 1 {
+                    zero_count += 1;
+                }
+                self.position = self.position % (self.upper_limit + 1);
             }
             _ => {
                 return Err(String::from("Invalid input direction").into());
             }
         }
-        println!("Dial rotated {}{} to position {}", direction, amount, self.position);
-        Ok(if self.position == 0 {1} else {0})
+        if self.position == 0 {zero_count += 1};
+        println!("Dial rotated {}{} to position {}, counted {} zeroes", direction, amount, self.position, zero_count);
+        Ok(zero_count)
     }
 }
 
