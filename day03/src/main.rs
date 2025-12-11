@@ -22,18 +22,19 @@ impl CharSlice for str {
 }
 
 fn get_joltage_day1(bank: &str) -> u64 {
-    let first_joltage = get_joltage_generic(&bank.char_slice(0, bank.chars().count().saturating_sub(1)));
-    let second_joltage = get_joltage_generic(&bank.char_slice(first_joltage.0.saturating_add(1), bank.chars().count()));
-
-    [first_joltage.1, second_joltage.1].iter().collect::<String>().parse::<u64>().unwrap_or(0)
+    get_joltage_num_digits(bank, 2)
 }
 
 fn get_joltage_day2(bank: &str) -> u64 {
+    get_joltage_num_digits(bank, 12)
+}
+
+fn get_joltage_num_digits(bank: &str, num_digits: usize) -> u64 {
     let mut joltage_vec: Vec<char> = [].to_vec();
     let mut next_start_index: usize = 0;
 
-    for digit in (0..=11).rev() {
-        let (pos, val) = get_joltage_generic(&bank.char_slice(next_start_index, bank.chars().count().saturating_sub(digit)));
+    for digit in (0..=(num_digits.saturating_sub(1))).rev() {
+        let (pos, val) = get_joltage_single_high(&bank.char_slice(next_start_index, bank.chars().count().saturating_sub(digit)));
         next_start_index += pos.saturating_add(1); //each call moves start index to 0 since it's a sub-slice so add this to previous starting location
         joltage_vec.push(val);
     }
@@ -41,7 +42,7 @@ fn get_joltage_day2(bank: &str) -> u64 {
     joltage_vec.iter().collect::<String>().parse::<u64>().unwrap_or(0)
 }
 
-fn get_joltage_generic(bank: &str) -> (usize, char) {
+fn get_joltage_single_high(bank: &str) -> (usize, char) {
     bank.chars()
         .enumerate()
         .scan((usize::MIN, '0'), |best, (i, c)| {
