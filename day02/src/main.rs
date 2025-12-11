@@ -48,34 +48,70 @@ fn validate_ids_day1(min: &u64, max: &u64) -> u64 {
         return 0;
     }
 
-    print!("[{}-{}] invalids: ", min, max);
+    //print!("[{}-{}] invalids: ", min, max);
 
     let result = (*min..=*max).fold(0, |acc: u64, val: u64| {
         let dig_cnt = if need_digit_cnt {get_digit_count(&val)} else {min_dig_cnt};
         let mut accum: u64 = acc;
 
         if dig_cnt % 2 == 0 && val % ((10_u64.pow((dig_cnt/2).into())) + 1) == 0 {
-            print!("{} ", val);
+            //print!("{} ", val);
             accum += val;
         }
         accum
     });
 
-    result //default
+    result
+}
+
+fn validate_ids_day2(min: &u64, max: &u64) -> u64 {
+    let min_dig_cnt = get_digit_count(min);
+    let max_dig_cnt = get_digit_count(max);
+
+    // ignore invalid inputs
+    if min_dig_cnt == 0 || max_dig_cnt == 0  {
+        return 0;
+    }
+
+    let result = (*min..=*max).fold(0, |acc:u64, val: u64| {
+        let mut accum: u64 = acc;
+        let len = get_digit_count(&val);
+
+        for dig in 1..=len {
+            if len % dig == 0 {
+                let chunks: Vec<String> = val.to_string().chars().collect::<Vec<_>>()
+                    .chunks(dig.into())
+                    .map(|chunk| chunk.iter().collect())
+                    .collect();
+
+                if chunks.len() > 1 && chunks.windows(2).all(|w| w[0] == w[1]) {
+                    //println!("{}", val);
+                    accum += val;
+                    break;
+                }
+            }
+        }
+
+        accum
+    });
+    
+    result
 }
 
 fn main() {
     if let Ok(lines) = read_lines("./input") {
         for line in lines.map_while(Result::ok) {
-            let mut sum: u64 = 0;
+            let mut sum_day1: u64 = 0;
+            let mut sum_day2: u64 = 0;
             
             for id_range in line.split(',') {
                 let mut id_min_max = id_range.split('-');
 
                 if let (Some(id_min), Some(id_max)) = (id_min_max.next(), id_min_max.next()) {
                     if let (Ok(min), Ok(max)) = (id_min.parse::<u64>(), id_max.parse::<u64>()) {
-                        sum += validate_ids_day1(&min, &max);
-                        println!();
+                        sum_day1 += validate_ids_day1(&min, &max);
+                        sum_day2 += validate_ids_day2(&min, &max);
+                        //println!();
 
                     } else {
                         println!("Could not parse min and max values into integers!");
@@ -85,7 +121,8 @@ fn main() {
                     println!("Got malformed input range!");
                 }
             }
-            println!("Sum of invalids: {}", sum);
+            println!("Sum of invalids Day 1: {}", sum_day1);
+            println!("Sum of invalids Day 2: {}", sum_day2);
         }
     }
 }
