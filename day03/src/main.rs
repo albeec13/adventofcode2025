@@ -21,11 +21,24 @@ impl CharSlice for str {
     }
 }
 
-fn get_joltage(bank: &str) -> u64 {
+fn get_joltage_day1(bank: &str) -> u64 {
     let first_joltage = get_joltage_generic(&bank.char_slice(0, bank.chars().count().saturating_sub(1)));
     let second_joltage = get_joltage_generic(&bank.char_slice(first_joltage.0.saturating_add(1), bank.chars().count()));
 
     [first_joltage.1, second_joltage.1].iter().collect::<String>().parse::<u64>().unwrap_or(0)
+}
+
+fn get_joltage_day2(bank: &str) -> u64 {
+    let mut joltage_vec: Vec<char> = [].to_vec();
+    let mut next_start_index: usize = 0;
+
+    for digit in (0..=11).rev() {
+        let (pos, val) = get_joltage_generic(&bank.char_slice(next_start_index, bank.chars().count().saturating_sub(digit)));
+        next_start_index += pos.saturating_add(1); //each call moves start index to 0 since it's a sub-slice so add this to previous starting location
+        joltage_vec.push(val);
+    }
+
+    joltage_vec.iter().collect::<String>().parse::<u64>().unwrap_or(0)
 }
 
 fn get_joltage_generic(bank: &str) -> (usize, char) {
@@ -47,14 +60,18 @@ fn get_joltage_generic(bank: &str) -> (usize, char) {
 }
 
 fn main() {
-    let mut total_joltage: u64 = 0;
+    let mut total_joltage_day1: u64 = 0;
+    let mut total_joltage_day2: u64 = 0;
+
     if let Ok(lines) = read_lines("./input") {
         for bank in lines.map_while(Result::ok) {            
             print!("Bank: {}", bank);
-            let bank_joltage = get_joltage(&bank);
-            total_joltage += bank_joltage;
-            println!(" Jolts: {}",bank_joltage);
+            let bank_joltage_day1 = get_joltage_day1(&bank);
+            let bank_joltage_day2 = get_joltage_day2(&bank);
+            total_joltage_day1 += bank_joltage_day1;
+            total_joltage_day2 += bank_joltage_day2;
+            println!(" Jolts (part 1, part 2): {}, {}",bank_joltage_day1, bank_joltage_day2);
         }
     }
-    println!("Total Joltage: {}", total_joltage);
+    println!("Total Joltage (part 1, part 2): {}, {}", total_joltage_day1, total_joltage_day2);
 }
