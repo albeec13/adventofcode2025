@@ -9,18 +9,6 @@ where P: AsRef<Path>, {
     Ok(io::BufReader::new(file).lines())
 }
 
-pub trait CharSlice {
-    fn char_slice(&self, start: usize, end: usize) -> &str;
-}
-
-impl CharSlice for str {
-    fn char_slice(&self, start: usize, end: usize) -> &str {
-        let start_byte = self.char_indices().nth(start).map(|(i, _)| i).unwrap_or(self.len());
-        let end_byte = self.char_indices().nth(end).map(|(i, _)| i).unwrap_or(self.len());
-        &self[start_byte..end_byte]
-    }
-}
-
 #[derive(Clone)]
 struct RollMatrix {
     rows: Vec<Vec<char>>,
